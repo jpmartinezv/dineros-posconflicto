@@ -1,0 +1,80 @@
+<?php
+
+/*********hooks******/
+
+/**
+ * implementa hook menu()
+ ***/
+
+function generador_menu()
+{
+
+    $items = array();
+
+    $items['mapa/data'] = array(
+        'page callback' => 'mapa_general_json',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK
+    );
+
+    return $items;
+}	
+
+/*
+Genera un JSON con los perfiles
+ */
+function mapa_general_json($depto = false)
+{
+    $url = drupal_get_path('module', 'generador');
+
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'node')
+        ->propertyCondition('status', 1)
+        ->propertyCondition('type', array('municipio'));
+    $entities = $query->execute();
+    $data = array();
+    if ($entities) {
+        $nodes = entity_load('node', array_keys($entities['node']));
+        foreach ($nodes as $node) {
+            // $data[$node->nid] = $node;
+            $item = array();
+            $item['nid'] = $node->nid;
+            $item['title'] = $node->title;
+            $item['field_departamento'] = $node->field_departamento['und'][0]['value'];
+            $item['field_nivel'] = $node->field_nivel_de_municipio['und'][0]['value'];
+            $item['field_superficie'] = $node->field_superficie['und'][0]['value'];
+            $item['field_numero_personas'] = $node->field_numero_total_de_personas['und'][0]['value'];
+            $item['field_numero_indigenas'] = $node->field_indigenas['und'][0]['value'];
+            $item['field_mun_priorizado'] = taxonomy_term_load($node->field_municipio_priorizado['und'][0]['tid'])->name;
+            $item['field_agua'] = taxonomy_term_load($node->field_servicios_b_sicos_agua['und'][0]['tid'])->name;
+            $item['field_electricidad'] = taxonomy_term_load($node->field_servicios_b_sicos_electric['und'][0]['tid'])->name;
+            $item['field_alcantarillado'] = taxonomy_term_load($node->field_servicios_b_sicos_alcantar['und'][0]['tid'])->name;
+            $item['field_ubicacion'] = array($node->field_coordenadas['und'][0]['lat'], $node->field_coordenadas['und'][0]['lon']);
+
+            $contratos = array();
+
+            foreach ($node->field_contratos_por_municipios['und'] as $cc) {
+                $contrato_nid = $cc['nid'];
+                $contrato = node_load($contrato_nid);
+
+                $temp = array();
+                $temp['nombre'] = $contrato->title;
+                $temp['uri'] = url(drupal_get_path_alias('node/' . (int) $contrato_nid));
+                array_push($contratos, $temp);
+            }
+
+            $item['field_contratos'] = $contratos;
+            $data[$node->nid] = $item;
+        }
+    }  
+    // print_r($data);
+
+    ob_start('ob_gzhandler');
+    drupal_json_output($data);
+}
+
+/* 
+Genera un JSON con los municipios
+ */
+
+

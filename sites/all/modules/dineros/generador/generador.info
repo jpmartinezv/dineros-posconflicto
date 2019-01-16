@@ -1,0 +1,10 @@
+name = Generador
+description = Modulo para generar JSON
+core = 7.x
+version = 7.x-1.0
+package = Dineros
+dependencies[] = image
+
+; Gustavo Gil gustavo.gil@gmail.com
+project = "Conflicto"
+datestamp = "1439486656"

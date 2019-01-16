@@ -1,0 +1,260 @@
+<?php
+
+/*******hooks*******/
+
+/**
+* implement hook_menu()
+*/
+function home_menu() {  
+    $items = array();
+
+    $items['home'] = array(
+        'title' => 'Dineros del Posconflicto',
+        'page callback' => 'home_content',
+        'access arguments' => array('access content'), 
+        'type' => MENU_CALLBACK,
+    );
+    
+
+return $items;
+}   
+
+function home_content(){
+    $url = drupal_get_path('module', 'home');
+
+ 
+
+    drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenLite.min.js', 'external');
+    drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TimelineMax.min.js', 'external');
+    drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/plugins/CSSPlugin.min.js', 'external');
+    drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/easing/EasePack.min.js', 'external');
+    drupal_add_css('http://unpkg.com/leaflet@1.2.0/dist/leaflet.css', 'external');
+    drupal_add_js('http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.js', 'external');
+      drupal_add_css($url.'/css/style.css');
+  drupal_add_css($url.'/css/font-awesome.min.css');
+    drupal_add_js('https://d3js.org/d3.v4.min.js', 'external');
+    $url_mod = drupal_get_path('module', 'home');
+    drupal_add_css($url_mod . '/css/jquery.fullPage.css');
+    drupal_add_css($url_mod . '/css/style.css');
+    // drupal_add_js($url_mod . '/js/numscroller-1.0.js');
+    drupal_add_js($url_mod . '/js/jquery.fullPage.js');
+    drupal_add_js($url_mod . '/js/dineros.js');
+
+    $html='<div class="container-fluid home_1">
+
+  <div class="container parrafo_inicio">';
+
+  $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'node')
+        ->propertyCondition('status', 1)
+        ->propertyCondition('type', array('home_dineros'));
+       // ->fieldCondition('field_radio_plataforma', 'tid', 8);
+    $entities = $query->execute();  
+  $data = array();
+  if($entities){
+    $nodes = entity_load('node', array_keys($entities['node']));
+    foreach ($nodes as $node) {
+
+
+  $html.='
+  <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-xs-12" id="texto-banner">
+  <p>'.$node->body['und'][0]['value'].'</p>';}
+
+    }
+
+
+
+$html.='</div>
+</div>
+</div>
+<div class="container-fluid separador"></div>
+<div class="container-fluid" id="mapa" style="margin-bottom: 3em;">
+<div class="container">
+        <div class="col-lg-4 col-md-4 col-xs-12 seccionador-destacados" style="width:fit-content;">
+            <div class="seccionador-destacados-texto">
+            <h2>CONTRATOS POR MUNICIPIO</h2>
+            </div>
+        </div>
+        </div>
+    <h3>*Seleccione uno de los municipios para conocer más información</h3>
+<div class="col-lg-6 col-xs-12">
+<!-- Map -->
+<div id="mapa-lideres" style="height: 700px">
+ <div id="tooltip"></div>
+</div>
+</div>
+<!-- Modal -->
+<div class="col-lg-6 col-xs-12">
+ <div class="col-lg-12 col-md-12 col-xs-12 seccionador-destacados">
+            <div class="seccionador-destacados-texto">
+            <h1>DATOS PRINCIPALES DEL MUNICIPIO</h1>
+            </div>
+        </div>
+<div class="modal" id="modal"></div>
+<!-- Card -->
+<div class="card" id="card">
+    <!-- Card content -->
+    <div class="card__wrapper">
+        <div class="card__content">
+            <div class="row">
+                    <div class="card__header__name">
+                         <span class="cell__value" id="cs-nombre"></span>,
+                         <span class="cell__value" id="cs-nombre2"></span>
+          </div>
+            </div>
+
+       
+                   <div class="row flex">
+                <div class="col">
+                    <div class="cell">
+                    <div class="col-lg-6 col-md-6 col-xs-6">
+                        <span class="cell__label">Municipio priorizado:</span>
+
+                    </div>
+                      <div class="col-lg-6 col-md-6 col-xs-6 cell__value2" >
+                        <span id="cs-priorizado"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+              <div class="row flex">
+                <div class="col">
+                    <div class="cell">
+                    <div class="col-lg-6 col-md-6 col-xs-6">
+                        <span class="cell__label">Superficie:</span>
+
+                    </div>
+                      <div class="col-lg-6 col-md-6 col-xs-6 cell__value2" >
+                        <span id="cs-superficie"></span>
+                        <span>Kilometros</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row flex">
+                <div class="col">
+                    <div class="cell">
+                        <div class="col-lg-6 col-md-6 col-xs-6">
+                        <span class="cell__label">Población:</span>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-xs-6 cell__value2">
+                        <span class="cell__value" id="cs-poblacion"></span>
+                          <span>Personas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+              <div class="row flex">
+                <div class="col">
+                    <div class="cell">
+                                <div class="col-lg-6 col-md-6 col-xs-6">
+                        <span class="cell__label">Población étnica:</span>
+                        </div>
+                                    <div class="col-lg-6 col-md-6 col-xs-6 cell__value2">
+                        <span class="cell__value" id="cs-indigenas"></span>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div class="row flex">
+                <div class="col">
+                    <div class="cell">
+                          <div class="col-lg-6 col-md-6 col-xs-6">
+                        <span class="cell__label">Servicios básicos:</span>
+                          </div>
+                          <div class="col-lg-6 col-md-6 col-xs-6 cell__value2">
+                        <span><small>Agua</small></span>
+                        <span class="cell__value" id="cs-agua"></span>
+                        <span>%</span>
+                        <br>
+                        <span><small>Electricidad</small></span>
+                           <span class="cell__value" id="cs-electricidad"></span>
+                             <span>%</span>
+                           <br>
+                        <span><small>Alcantarillado</small></span>
+                              <span class="cell__value" id="cs-alcantarillado"></span>
+                                <span>%</span>
+                          </div>
+                    </div>
+                </div>
+                </div>
+            <div class="row flex">
+                <div class="col">
+                    <div class="cell">
+                                <div class="col-lg-6 col-md-6 col-xs-6">
+                        <span class="cell__label">Nivel del municipio:</span>
+                        </div>
+                                    <div class="col-lg-6 col-md-6 col-xs-6 cell__value2">
+                        <span class="cell__value" id="cs-nivel"></span>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div class="row flex">
+                <div class="col">
+                    <div class="cell">
+                        <div class="col-lg-12 col-md-12 col-xs-12">
+                          <span class="cell__label">Contratos en el municipio:</span><br>
+                        </div>
+                        <div class="col-lg-12 col-md-12 col-xs-12">
+                          <div class="cell__value" id="cs-contratos"></div>
+                        </div>
+                    </div>
+                </div>
+    
+            </div>
+        </div>
+
+    </div>
+    </div>
+</div>
+</div>
+</div>
+<div class="container-fluid separador"></div>
+
+  <div class="container-fluid destacados" style="background-color:grey">
+    <div class="container">
+        <div class="row">
+        <div class="col-lg-4 col-md-4 col-xs-12 seccionador-destacados" style="width:fit-content;">
+            <div class="seccionador-destacados-texto">
+            <h2>SECCIONES</h2>
+            </div>
+        </div>
+        </div>
+        <div class="row" style="margin-top:2em;">';
+
+        $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'node')
+        ->propertyCondition('status', 1)
+        ->propertyCondition('type', array('destacados_home'));
+       // ->fieldCondition('field_radio_plataforma', 'tid', 8);
+    $entities = $query->execute();  
+  $data = array();
+  if($entities){
+    $nodes = entity_load('node', array_keys($entities['node']));
+    foreach ($nodes as $node) {
+
+
+  $html.='<a href="'.$node->field_url_destacado['und'][0]['value'].'"><div class="col-sm-6 col-md-4">
+    <div class="thumbnail">
+      <img src="'.$node->field_url_imagen['und'][0]['value'].'" width="100%" class="img-responsive">
+      <div class="caption">
+        <h2>'.$node->title.'</h2>
+      </div>
+    </div>
+  </div></a>';
+  
+  }
+}
+
+$html.='</div>
+    </div>
+</div>
+ <div class="container-fluid separador"></div>
+
+ 
+    </div>';
+
+    return $html;
+}
+

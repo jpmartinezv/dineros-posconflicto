@@ -1,0 +1,183 @@
+<?php
+
+/*******hooks*******/
+
+/**
+* implement hook_menu()
+*/
+function avanzada_menu() {  
+	$items = array();
+
+	$items['avanzada'] = array(
+		'title' => 'Rutas del conflicto - Los números del posconflicto',
+		'page callback' => 'avanzada_content',
+		'access arguments' => array('access content'), 
+		'type' => MENU_CALLBACK,
+  	);
+	
+
+return $items;
+}	
+
+function avanzada_content(){
+  $url = drupal_get_path('module', 'avanzada');
+  drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenLite.min.js', 'external');
+  drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TimelineMax.min.js', 'external');
+  drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/plugins/CSSPlugin.min.js', 'external');
+  drupal_add_js('https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/easing/EasePack.min.js', 'external');
+  drupal_add_css('http://unpkg.com/leaflet@1.2.0/dist/leaflet.css', 'external');
+  drupal_add_js('http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.js', 'external');
+  drupal_add_css($url.'/css/style.css');
+  drupal_add_css($url.'/css/font-awesome.min.css');
+  drupal_add_js('https://d3js.org/d3.v4.min.js', 'external');
+    
+  $url_mod = drupal_get_path('module', 'avanzada');
+  drupal_add_css($url_mod . '/css/jquery.fullPage.css');
+  drupal_add_css($url_mod . '/css/style.css');
+  drupal_add_js($url_mod . '/js/scrolloverflow.js');
+  // drupal_add_js($url_mod . '/js/numscroller-1.0.js');
+  drupal_add_js($url_mod . '/js/jquery.fullPage.js');
+  drupal_add_js($url_mod . '/js/animacion.js');
+  drupal_add_js($url_mod . '/js/dineros.js');
+  drupal_add_js($url_mod . '/js/avanzada.js');
+
+  // GET parameters
+  $tipo_de_fondo = $_GET["tipo_de_fondo"];
+  $tipo_de_licitacion = $_GET["tipo_de_licitacion"];
+  $municipio = $_GET["municipio"];
+
+  // QUERY
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+      ->propertyCondition('status', 1)
+      ->propertyCondition('type', array('contrato'));
+      // ->fieldCondition('field_radio_plataforma', 'tid', 8);
+  
+  if ($tipo_de_fondo) {
+    $query->fieldCondition('field_tipo_de_fondo', 'tid', array($tipo_de_fondo));
+  }
+  if ($tipo_de_licitacion) {
+    $query->fieldCondition('field_tipo_de_contratacion', 'tid', array($tipo_de_licitacion));
+  }
+  // if ($municipio) {
+  //   $query->fieldCondition('field_municipio_contratro', 'tid', array($municipio));
+  // }
+
+  $query->pager(12);
+  $entities = $query->execute();
+  
+  // HTML
+  $html.='
+<div class="container">
+  <div class="row">
+    <div class="col-lg-4 col-md-4 col-xs-12 seccionador-destacados" style="width:fit-content;">
+      <div class="seccionador-destacados-texto">
+        <h2>LISTADO DE CONTRATOS</h2>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-xs-12" id="filtros">
+      <div class="col-lg-4 col-xs-12">
+        <select name="tipo_de_fondo" id="tipo_de_fondo">';
+        $vocab = taxonomy_vocabulary_machine_name_load('tipo_de_fondo');
+        $vid = $vocab->vid;
+        $tree = taxonomy_get_tree($vid);
+        $html .= '<option value="">Tipo de fondo</option>';
+        foreach ($tree as $datico) {
+          if($tipo_de_fondo == $datico->tid) {
+            $html .= '<option value="' . $datico->tid . '" selected>' . $datico->name . '</option>';
+          } else {
+            $html .= '<option value="' . $datico->tid . '">' . $datico->name . '</option>';
+          }
+        }
+$html .= '
+        </select>
+      </div>
+      <div class="col-lg-4 col-xs-12">
+        <select name="tipo_de_licitacion" id="tipo_de_licitacion">';
+        $vocab = taxonomy_vocabulary_machine_name_load('tipo_de_licitacion');
+        $vid = $vocab->vid;
+        $tree = taxonomy_get_tree($vid);
+        $html .= '<option value="">Tipo de contratación</option>';
+        foreach ($tree as $datico) {
+          if($tipo_de_licitacion == $datico->tid) {
+            $html .= '<option value="' . $datico->tid . '" selected>' . $datico->name . '</option>';
+          } else {
+            $html .= '<option value="' . $datico->tid . '">' . $datico->name . '</option>';
+          }
+        }
+        $html .= '
+      </select>
+    </div>
+    <div class="col-lg-4 col-xs-12">
+      <select name="municipio" id="municipio">';
+      $vocab = taxonomy_vocabulary_machine_name_load('municipios_del_contrato');
+      $vid = $vocab->vid;
+      $tree = taxonomy_get_tree($vid);
+      $html .= '<option value="">Municipios</option>';
+      foreach ($tree as $datico) {
+        if($municipio == $datico->tid) {
+          $html .= '<option value="' . $datico->tid . '" selected>' . $datico->name . '</option>';
+        } else {
+          $html .= '<option value="' . $datico->tid . '">' . $datico->name . '</option>';
+        }
+      }
+      $html .= '
+      </select>
+    </div>
+  </div>
+</div>
+<div class="row" style="margin-top:2em;">';  
+
+  if($entities){
+    $nodes = entity_load('node', array_keys($entities['node']));
+
+    foreach ($nodes as $node) {
+      $ubicacion = taxonomy_get_parents_all($node->field_colombia['und'][0]['tid']);
+      $html.='
+  <div class="col-xs-12 col-lg-4 col-md-4 buscador-contratos">
+    <div class="thumbnail" style="min-height:350px">
+        <div class="col-xs-12 col-lg-12 col-md-12" id="titulo-ficha-buscador" style="background-color:#FFB400;">
+          <h3>'.$node->title.'</h3>
+        </div>
+        <div class="row fila-data">
+          <div class="col-lg-6 col-md-6 col-xs-6 label-buscador">Valor del contrato:</div>
+          <div class="col-lg-6 col-md-6 col-xs-6 datos-ficha-buscador"> '.$node->field_valor['und'][0]['value'].'</div>
+        </div>
+        <div class="row fila-data">
+          <div class="col-lg-6 col-md-6 col-xs-6 label-buscador">Tipo de fondo:</div>
+          <div class="col-lg-6 col-md-6 col-xs-6 datos-ficha-buscador"> ' . taxonomy_term_load($node->field_tipo_de_fondo['und'][0]['tid'])->name . '</div>  
+        </div> 
+        <div class="row fila-data">
+          <div class="col-lg-6 col-md-6 col-xs-6 label-buscador">Tipo de contratación: </div>
+          <div class="col-lg-6 col-md-6 col-xs-6 datos-ficha-buscador">' . taxonomy_term_load($node->field_tipo_de_contratacion['und'][0]['tid'])->name . '</div>
+        </div>
+        <div class="row fila-data">
+          <div class="col-lg-6 col-md-6 col-xs-6 label-buscador">Fecha de inicio: </div>
+          <div class="col-lg-6 col-md-6 col-xs-6 datos-ficha-buscador">' . format_date($node->field_fecha_de_inicio['und'][0]['value'], 'custom', 'm.d.Y'). '</div>
+        </div>
+        <div class="row fila-data">
+          <div class="col-lg-6 col-md-6 col-xs-6 label-buscador">Fecha de finalizacion: </div>
+          <div class="col-lg-6 col-md-6 col-xs-6 datos-ficha-buscador">' . format_date($node->field_fecha_de_finalizacion['und'][0]['value'], 'custom', 'm.d.Y'). '</div>
+        </div>
+
+        <div class="row ">
+          <a href="?q=node/'.$node->nid.'">
+            <div class="col-lg-4 col-lg-offset-8 col-md-offset-8 col-md-4 col-xs-6 col-xs-offset-6 label-ver-mas">Ver más</div>
+          </a>
+        </div>
+      </div>
+  </div>';
+    }
+  }  
+  
+  $html .='</div>'.theme('pager');'</div>
+    </div>
+</div></div>
+  <div class="container-fluid separador"></div>
+    </div>';
+
+	return $html;
+}
+
