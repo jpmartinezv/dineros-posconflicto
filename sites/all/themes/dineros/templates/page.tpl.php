@@ -4,8 +4,8 @@ $url = drupal_get_path('theme', 'dineros');
 $tema_ruta = drupal_get_path('theme', 'dineros');
 
 $path = current_path();
-if($path == 'home') {
-    $path = '';
+if ($path == 'home') {
+  $path = '';
 }
 ?>
 
@@ -20,15 +20,15 @@ if($path == 'home') {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="http://rutasdelconflicto.com/dineros-posconflicto/">LOS NÚMEROS DEL POSCONFLICTO</a>
+      <a class="navbar-brand" href="<?php print url('<front>'); ?>">LOS NÚMEROS DEL POSCONFLICTO</a>
     </div>
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="http://rutasdelconflicto.com/dineros-posconflicto/node/749">¿Quiénes somos?</a></li>
-          <li><a href="http://rutasdelconflicto.com/dineros-posconflicto/node/754">Historias</a></li>
-           <li><a href="http://rutasdelconflicto.com/dineros-posconflicto/avanzada">Búsqueda avanzada</a></li>
+        <li><a href="<?php print url('node/749'); ?>">¿Quiénes somos?</a></li>
+          <li><a href="<?php print url('node/754'); ?>">Historias</a></li>
+           <li><a href="<?php print url('avanzada'); ?>">Búsqueda avanzada</a></li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
@@ -58,7 +58,7 @@ if($path == 'home') {
  
     </div> 
     <div class="container"><hr>
-      <div class="col-lg-6 menufooter"><ul><a href="http://rutasdelconflicto.com/dineros-posconflicto/node/749"><li>Quiénes Somos</li></a><a href="http://rutasdelconflicto.com/dineros-posconflicto/avanzada"><li>Búsqueda Avanzada</li></a></ul>
+      <div class="col-lg-6 menufooter"><ul><a href="<?php print url('node/749'); ?>"><li>Quiénes Somos</li></a><a href="<?php print url('avanzada'); ?>"><li>Búsqueda Avanzada</li></a></ul>
       </div> 
       </div>
 

@@ -47,7 +47,7 @@ $query->entityCondition('entity_type', 'node')
  
     </div> 
     <div class="container"><hr>
-      <div class="col-lg-6 menufooter"><ul><a href="http://rutasdelconflicto.com/dineros-posconflicto/node/749"><li>Quiénes Somos</li></a><a href="http://rutasdelconflicto.com/dineros-posconflicto/avanzada"><li>Búsqueda Avanzada</li></a></ul>
+      <div class="col-lg-6 menufooter"><ul><a href="<?php print url('node/749'); ?>"><li>Quiénes Somos</li></a><a href="<?php print url('avanzada'); ?>"><li>Búsqueda Avanzada</li></a></ul>
       </div> 
       </div>
 
